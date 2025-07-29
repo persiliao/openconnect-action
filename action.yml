@@ -1,0 +1,56 @@
+name: OpenConnect VPN Connector
+description: Connect to a VPN using OpenConnect
+author: Persi.Liao
+branding:
+  icon: 'globe'
+  color: 'blue'
+
+inputs:
+  server:
+    description: 'VPN server address'
+    required: true
+  username:
+    description: 'VPN username'
+    required: true
+  password:
+    description: 'VPN password'
+    required: true
+  group:
+    description: 'VPN group (optional)'
+    required: false
+  protocol:
+    description: 'VPN protocol type (default: anyconnect)'
+    required: false
+    default: 'anyconnect'
+  cert:
+    description: 'Client certificate in PEM format (optional)'
+    required: false
+  background:
+    description: 'Run in background (default: true)'
+    required: false
+    default: 'true'
+  disconnect:
+    description: 'Automatically disconnect when done (default: false)'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:  
+    - name: Connect to VPN
+      if: always() && inputs.server != '' && inputs.username != '' && inputs.password != ''
+      shell: bash
+      run: ${{ github.action_path }}/src/main.sh
+      env:
+        VPN_SERVER: ${{ inputs.server }}
+        VPN_PROTOCOL: ${{ inputs.protocol }}
+        VPN_USER: ${{ inputs.username }}
+        VPN_PASSWORD: ${{ inputs.password }}
+        VPN_GROUP: ${{ inputs.group }}
+        VPN_CERT: ${{ inputs.cert }}
+        RUN_IN_BACKGROUND: ${{ inputs.background }}
+        
+    - name: Disconnect VPN
+      if: always() && inputs.disconnect == 'true'
+      shell: bash
+      run: ${{ github.action_path }}/src/disconnect.sh
