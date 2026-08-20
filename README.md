@@ -9,7 +9,8 @@ A GitHub Action for connecting to OpenConnect VPN in GitHub Actions workflows. S
 - ✅ Background mode operation
 - ✅ Automatic disconnection
 - ✅ Docker container support
-- ✅ Error handling and connection status validation
+- ✅ **Automatic installation** of the `openconnect` CLI when missing
+- ✅ Robust input validation and connection status checks
 
 ## Input Parameters
 
@@ -146,6 +147,26 @@ jobs:
           disconnect: 'true'
 ```
 
+## Automatic Installation
+
+The action no longer requires `openconnect` to be pre-installed on the runner.
+Before connecting, it checks whether the `openconnect` binary is available and,
+if not, installs it automatically using the package manager detected for the
+current OS:
+
+| Runner / OS                | Package manager | Command used                                  |
+|----------------------------|-----------------|-----------------------------------------------|
+| Ubuntu / Debian (incl. containers) | `apt`  | `apt-get install -y openconnect vpnc-scripts` |
+| Alpine (containers)        | `apk`           | `apk add --no-cache openconnect`              |
+| Fedora / RHEL (dnf)        | `dnf`           | `dnf install -y openconnect`                  |
+| Fedora / RHEL (yum)        | `yum`           | `yum install -y openconnect`                  |
+| macOS (`macos-latest`)     | `brew`          | `brew install openconnect`                    |
+
+Privilege escalation is handled automatically: `sudo` is used only when the
+step is not already running as root. If the OS / package manager is not
+supported, the action fails with a clear error asking you to install
+`openconnect` manually.
+
 ## Protocol Support
 
 Currently supports the following protocols (`protocol` parameter):
@@ -153,7 +174,9 @@ Currently supports the following protocols (`protocol` parameter):
 - `anyconnect` - Cisco AnyConnect
 - `nc` - Juniper Network Connect
 - `jnpr` - Juniper/Pulse Secure
+- `pulse` - Pulse Connect Secure
 - `gp` - GlobalProtect
+- `f5` - F5 BIG-IP Edge Gateway
 - `fortinet` - FortiGate SSL VPN
 - `array` - Array Networks VPN
 
@@ -198,10 +221,14 @@ env:
 
 ## Dependencies
 
-- Base image must include the following packages:
-  - `openconnect`
-  - `vpnc-script` or equivalent
-  - `sudo` (for privilege escalation)
+`openconnect` is installed automatically by the action when missing (see
+[Automatic Installation](#automatic-installation)), so no manual setup is
+required on supported runners. For unsupported operating systems, install the
+following manually before using the action:
+
+- `openconnect` (the CLI binary)
+- `vpnc-script` or equivalent (tunnel routing script)
+- `sudo` (only needed when the step does not already run as root)
 
 ## License
 
