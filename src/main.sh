@@ -71,7 +71,7 @@ fi
 # Connect
 # ---------------------------------------------------------------------------
 log "Connecting to ${VPN_SERVER} using protocol '${VPN_PROTOCOL}'..."
-printf '%s\n' "$VPN_PASSWORD" | run_root openconnect "${ARGS[@]}" "$VPN_SERVER"
+printf '%s\n' "$VPN_PASSWORD" | sudo openconnect "${ARGS[@]}" "$VPN_SERVER"
 
 # Give the tunnel a moment to come up before validating.
 SLEEP_SECONDS=10
