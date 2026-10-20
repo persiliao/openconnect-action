@@ -1,0 +1,16 @@
+name: OpenConnect VPN Disconnect
+description: Tear down the VPN connection established by persiliao/openconnect-action
+author: Persi.Liao
+branding:
+  icon: 'globe'
+  color: 'blue'
+
+runs:
+  using: 'composite'
+  steps:
+    # A composite action cannot run teardown code after the caller's own steps,
+    # so disconnection is exposed as a separate entry point that reuses the
+    # shared scripts from the parent action directory.
+    - name: Disconnect VPN
+      shell: bash
+      run: bash "${{ github.action_path }}/../src/disconnect.sh"

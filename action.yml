@@ -1,5 +1,5 @@
 name: OpenConnect VPN Connector
-description: Connect to a VPN using OpenConnect
+description: Connect to a VPN using OpenConnect. Pair with disconnect/action.yml to tear the tunnel down.
 author: Persi.Liao
 branding:
   icon: 'globe'
@@ -23,22 +23,28 @@ inputs:
     required: false
     default: 'anyconnect'
   cert:
-    description: 'Client certificate in PEM format (optional)'
+    description: 'Client certificate in PEM format, including the key (optional)'
     required: false
-  background:
-    description: 'Run in background (default: true)'
+  cert_key:
+    description: 'Private key in PEM format when it is not part of cert (optional)'
     required: false
-    default: 'true'
-  disconnect:
-    description: 'Automatically disconnect when done (default: false)'
-    required: false
-    default: 'false'
+
+outputs:
+  vpn_ip:
+    description: 'IPv4 address assigned to the tunnel interface (empty when it could not be detected)'
+    value: ${{ steps.connect.outputs.vpn_ip }}
+  pid:
+    description: 'PID of the backgrounded openconnect process'
+    value: ${{ steps.connect.outputs.pid }}
+  log_file:
+    description: 'Path of the openconnect log, useful when the connection fails'
+    value: ${{ steps.connect.outputs.log_file }}
 
 runs:
   using: 'composite'
-  steps:  
+  steps:
     - name: Connect to VPN
-      if: always() && inputs.server != '' && inputs.username != '' && inputs.password != ''
+      id: connect
       shell: bash
       run: ${{ github.action_path }}/src/main.sh
       env:
@@ -48,9 +54,4 @@ runs:
         VPN_PASSWORD: ${{ inputs.password }}
         VPN_GROUP: ${{ inputs.group }}
         VPN_CERT: ${{ inputs.cert }}
-        RUN_IN_BACKGROUND: ${{ inputs.background }}
-        
-    - name: Disconnect VPN
-      if: always() && inputs.disconnect == 'true'
-      shell: bash
-      run: ${{ github.action_path }}/src/disconnect.sh
+        VPN_CERT_KEY: ${{ inputs.cert_key }}

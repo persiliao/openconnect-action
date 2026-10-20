@@ -1,0 +1,8 @@
+# Local assistant/tooling state
+.workbuddy/
+
+# OS cruft
+.DS_Store
+
+# Test and debug artifacts
+*.log
